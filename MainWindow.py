@@ -72,11 +72,11 @@ class MainWindow(QMainWindow):
         file_menu.addAction(deluser_action)
 
         export_csv_action = QAction(QIcon(""), "Export CSV", self)
-        # deluser_action.triggered.connect(self.delete)
+        export_csv_action.triggered.connect(self.export)
         file_menu.addAction(export_csv_action)
 
-        import_csv_action = QAction(QIcon(""), "Export CSV", self)
-        # deluser_action.triggered.connect(self.delete)
+        import_csv_action = QAction(QIcon(""), "Import CSV", self)
+        import_csv_action.triggered.connect(self._import)
         file_menu.addAction(import_csv_action)
 
         about_action = QAction(QIcon("icon/info.png"), "About", self)
@@ -116,6 +116,14 @@ class MainWindow(QMainWindow):
 
     def search(self):
         dlg = SearchDialog()
+        dlg.exec_()
+
+    def export(self):
+        dlg = ExportToCsvDialog()
+        dlg.exec_()
+
+    def _import(self):
+        dlg = DeleteDialog()
         dlg.exec_()
 
     def about(self):

@@ -1,3 +1,5 @@
+import csv
+
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
@@ -194,6 +196,61 @@ class LoginDialog(QDialog):
         else:
             QMessageBox.warning(self, 'Error', 'Wrong Password')
 
+class ExportToCsvDialog(QDialog):
+    def __init__(self, *args, **kwargs):
+        super(ExportToCsvDialog, self).__init__(*args, **kwargs)
+
+        self.QBtn = QPushButton()
+        self.QBtn.setText("Export")
+
+        self.setWindowTitle("Export To Csv File")
+        self.setFixedWidth(300)
+        self.setFixedHeight(100)
+        self.QBtn.clicked.connect(self.exportToDict)
+        layout = QVBoxLayout()
+
+        self.fileNameInput = QLineEdit()
+        # TODO Сделать проверку на имя файла
+        # self.onlyInt = QRegularExpressionValidator()
+        # self.deleteinput.setValidator(self.fileNameInput)
+        self.fileNameInput.setPlaceholderText("File Name")
+        layout.addWidget(self.fileNameInput)
+        layout.addWidget(self.QBtn)
+        self.setLayout(layout)
+
+    def exportToDict(self):
+
+        exportFile = self.fileNameInput.text()
+        self.conn = sqlite3.connect("database.db")
+
+        # This is the important part, here we are setting row_factory property of
+        # connection object to sqlite3.Row(sqlite3.Row is an implementation of
+        # row_factory)
+        self.conn.row_factory = sqlite3.Row
+        self.c = self.conn.cursor()
+        self.c.execute('select * from employee')
+
+        result = [dict(row) for row in self.c.fetchall()]
+
+        ### DEBUG ###
+        print(result)
+
+        self.exportToCsv(result)
+
+        self.c.close()
+        self.conn.close()
+        QMessageBox.information(QMessageBox(), 'Successful', 'Export Successful')
+        self.close()
+
+    def exportToCsv(self, result):
+        print(result)
+        toCSV = result
+        keys = toCSV[0].keys()
+        with open('employee.csv', 'w', newline='') as output_file:
+            dict_writer = csv.DictWriter(output_file, keys)
+            dict_writer.writeheader()
+            dict_writer.writerows(toCSV)
+
 
 class AboutDialog(QDialog):
     def __init__(self, *args, **kwargs):
@@ -241,4 +298,5 @@ if __name__ == '__main__':
         window = MainWindow()
         window.show()
         window.loaddata()
+
     sys.exit(app.exec_())
