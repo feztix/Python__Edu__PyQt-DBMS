@@ -59,12 +59,6 @@ class InsertDialog(QDialog):
 
     def addemployee(self):
 
-        # name = ""
-        # branch = ""
-        # sem = -1
-        # mobile = -1
-        # address = ""
-
         name = self.nameinput.text()
         branch = self.branchinput.itemText(self.branchinput.currentIndex())
         sem = self.seminput.itemText(self.seminput.currentIndex())
@@ -107,7 +101,6 @@ class SearchDialog(QDialog):
 
     def searchstudent(self):
 
-        searchrol = ""
         searchrol = self.searchinput.text()
         try:
             self.conn = sqlite3.connect("database.db")
@@ -147,7 +140,6 @@ class DeleteDialog(QDialog):
 
     def deletestudent(self):
 
-        delrol = ""
         delrol = self.deleteinput.text()
         try:
             self.conn = sqlite3.connect("database.db")
@@ -191,62 +183,55 @@ class LoginDialog(QDialog):
 
     # Я в ИБ 4 года, всё безопасно, гарантирую
     def login(self):
-        if (self.passinput.text() == "pass"):
+        if self.passinput.text() == "pass":
             self.accept()
         else:
             QMessageBox.warning(self, 'Error', 'Wrong Password')
+
 
 class ExportToCsvDialog(QDialog):
     def __init__(self, *args, **kwargs):
         super(ExportToCsvDialog, self).__init__(*args, **kwargs)
 
-        self.QBtn = QPushButton()
-        self.QBtn.setText("Export")
-
         self.setWindowTitle("Export To Csv File")
         self.setFixedWidth(300)
         self.setFixedHeight(100)
-        self.QBtn.clicked.connect(self.exportToDict)
-        layout = QVBoxLayout()
 
-        self.fileNameInput = QLineEdit()
-        # TODO Сделать проверку на имя файла
-        # self.onlyInt = QRegularExpressionValidator()
-        # self.deleteinput.setValidator(self.fileNameInput)
-        self.fileNameInput.setPlaceholderText("File Name")
-        layout.addWidget(self.fileNameInput)
-        layout.addWidget(self.QBtn)
-        self.setLayout(layout)
+        self.saveFileDialog()
 
-    def exportToDict(self):
+    def saveFileDialog(self):
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        fileName, _ = QFileDialog.getSaveFileName(self, "QFileDialog.getSaveFileName()", "",
+                                                  "All Files (*);;Text Files (*.csv)", options=options)
+        if fileName:
+            self.exportToDict(fileName)
 
-        exportFile = self.fileNameInput.text()
+    def exportToDict(self, filename):
+        # exportFile = self.fileNameInput.text()
+
+        # Возможно нужно будет передать в CSV
+        exportFile = filename
         self.conn = sqlite3.connect("database.db")
 
-        # This is the important part, here we are setting row_factory property of
-        # connection object to sqlite3.Row(sqlite3.Row is an implementation of
-        # row_factory)
         self.conn.row_factory = sqlite3.Row
         self.c = self.conn.cursor()
         self.c.execute('select * from employee')
 
         result = [dict(row) for row in self.c.fetchall()]
 
-        ### DEBUG ###
-        print(result)
-
-        self.exportToCsv(result)
+        self.exportToCsv(result, exportFile)
 
         self.c.close()
         self.conn.close()
         QMessageBox.information(QMessageBox(), 'Successful', 'Export Successful')
         self.close()
 
-    def exportToCsv(self, result):
+    def exportToCsv(self, result, filename):
         print(result)
         toCSV = result
         keys = toCSV[0].keys()
-        with open('employee.csv', 'w', newline='') as output_file:
+        with open(filename, 'w', newline='') as output_file:
             dict_writer = csv.DictWriter(output_file, keys)
             dict_writer.writeheader()
             dict_writer.writerows(toCSV)
