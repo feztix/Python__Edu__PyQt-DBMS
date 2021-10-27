@@ -10,7 +10,8 @@ class MainWindow(QMainWindow):
         self.conn = sqlite3.connect("database.db")
         self.c = self.conn.cursor()
         self.c.execute(
-            "CREATE TABLE IF NOT EXISTS employee(roll INTEGER PRIMARY KEY AUTOINCREMENT ,name TEXT,branch TEXT,sem TEXT,mobile INTEGER,address TEXT)")
+            "CREATE TABLE IF NOT EXISTS employee(roll INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT,branch TEXT,"
+            "sem TEXT,mobile INTEGER,address TEXT)")
         self.c.close()
 
         file_menu = self.menuBar().addMenu("&File")
@@ -44,6 +45,11 @@ class MainWindow(QMainWindow):
         btn_ac_adduser.setStatusTip("Add Student")
         toolbar.addAction(btn_ac_adduser)
 
+        btn_ac_changeuser = QAction(QIcon("icon/shuffle.png"), "Update Employee", self)
+        btn_ac_changeuser.triggered.connect(self.update)
+        btn_ac_changeuser.setStatusTip("Update Employee")
+        toolbar.addAction(btn_ac_changeuser)
+
         btn_ac_refresh = QAction(QIcon("icon/refresh.png"), "Refresh", self)
         btn_ac_refresh.triggered.connect(self.loaddata)
         btn_ac_refresh.setStatusTip("Refresh Table")
@@ -62,6 +68,10 @@ class MainWindow(QMainWindow):
         adduser_action = QAction(QIcon("icon/add.png"), "Insert Employee", self)
         adduser_action.triggered.connect(self.insert)
         file_menu.addAction(adduser_action)
+
+        changeuser_action = QAction(QIcon("icon/shuffle.png"), "Update Employee", self)
+        changeuser_action.triggered.connect(self.update)
+        file_menu.addAction(changeuser_action)
 
         searchuser_action = QAction(QIcon("icon/search.png"), "Search Employee", self)
         searchuser_action.triggered.connect(self.search)
@@ -94,20 +104,12 @@ class MainWindow(QMainWindow):
                 self.tableWidget.setItem(row_number, column_number, QTableWidgetItem(str(data)))
         self.connection.close()
 
-    # def handlePaintRequest(self, printer):
-    #     document = QTextDocument()
-    #     cursor = QTextCursor(document)
-    #     model = self.table.model()
-    #     table = cursor.insertTable(
-    #         model.rowCount(), model.columnCount())
-    #     for row in range(table.rows()):
-    #         for column in range(table.columns()):
-    #             cursor.insertText(model.item(row, column).text())
-    #             cursor.movePosition(QTextCursor.NextCell)
-    #     document.print_(printer)
-
     def insert(self):
         dlg = InsertDialog()
+        dlg.exec_()
+
+    def update(self):
+        dlg = UpdateDialog()
         dlg.exec_()
 
     def delete(self):

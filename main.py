@@ -78,6 +78,139 @@ class InsertDialog(QDialog):
             QMessageBox.warning(QMessageBox(), 'Error', 'Could not add student to the database.')
 
 
+class UpdateDialog(QDialog):
+    def __init__(self, *args, **kwargs):
+        super(UpdateDialog, self).__init__(*args, **kwargs)
+
+        # SearchDialog().exec()
+
+        # self.QBtn = QPushButton()
+        # self.QBtn.setText("Update")
+        #
+        # self.setWindowTitle("Update employee")
+        # self.setFixedWidth(300)
+        # self.setFixedHeight(100)
+        # self.QBtn.clicked.connect(self.searchstudent)
+        # # self.QBtn.clicked.connect(self.addemployee)
+        # layout = QVBoxLayout()
+        #
+        # self.searchinput = QLineEdit()
+        # self.onlyInt = QIntValidator()
+        # self.searchinput.setValidator(self.onlyInt)
+        # self.searchinput.setPlaceholderText("Employee ID")
+        # layout.addWidget(self.searchinput)
+        # layout.addWidget(self.QBtn)
+        # self.setLayout(layout)
+
+        #
+
+        self.QBtn = QPushButton()
+        self.QBtn.setText("Update")
+
+        self.setWindowTitle("Update Employee")
+        self.setFixedWidth(300)
+        self.setFixedHeight(250)
+
+        self.QBtn.clicked.connect(self.updateEmployee)
+
+        layout = QVBoxLayout()
+
+        self.idinput = QLineEdit()
+        self.idinput.setPlaceholderText("ID")
+        layout.addWidget(self.idinput)
+
+        self.nameinput = QLineEdit()
+        self.nameinput.setPlaceholderText("Name")
+        layout.addWidget(self.nameinput)
+
+        self.branchinput = QComboBox()
+        self.branchinput.addItem("Manager")
+        self.branchinput.addItem("Accountant")
+        self.branchinput.addItem("CEO Deputy")
+        self.branchinput.addItem("CEO")
+        self.branchinput.addItem("System Adm.")
+        self.branchinput.addItem("Security Adm.")
+        layout.addWidget(self.branchinput)
+
+        self.seminput = QComboBox()
+        self.seminput.addItem("Non Confidential")
+        self.seminput.addItem("Confidential")
+        self.seminput.addItem("Secret")
+        self.seminput.addItem("Top Secret")
+        layout.addWidget(self.seminput)
+
+        self.mobileinput = QLineEdit()
+        self.mobileinput.setPlaceholderText("Mobile")
+        self.mobileinput.setInputMask('999 999 99 99')
+        layout.addWidget(self.mobileinput)
+
+        self.addressinput = QLineEdit()
+        self.addressinput.setPlaceholderText("Department")
+        layout.addWidget(self.addressinput)
+
+        layout.addWidget(self.QBtn)
+        self.setLayout(layout)
+
+    # def searchstudent(self):
+    #
+    #     searchrol = self.searchinput.text()
+
+    # try:
+    #     self.conn = sqlite3.connect("database.db")
+    #     self.c = self.conn.cursor()
+    #     result = self.c.execute("SELECT * from employee WHERE roll=" + str(searchrol))
+    #     row = result.fetchone()
+    #     serachresult = "ID : " + str(row[0]) + '\n' + "Name : " + str(row[1]) + '\n' + "Role : " + str(
+    #         row[2]) + '\n' + "Access Level : " + str(row[3]) + '\n' + "Department : " + str(row[4])
+    #     QMessageBox.information(QMessageBox(), 'Successful', serachresult)
+    #     self.conn.commit()
+    #     self.c.close()
+    #     self.conn.close()
+    # except Exception:
+    #     QMessageBox.warning(QMessageBox(), 'Error', 'Could not Find employee from the database.')
+
+    def updateEmployee(self):
+
+        id = self.idinput.text()
+        name = self.nameinput.text()
+        branch = self.branchinput.itemText(self.branchinput.currentIndex())
+        sem = self.seminput.itemText(self.seminput.currentIndex())
+        mobile = self.mobileinput.text()
+        address = self.addressinput.text()
+
+        try:
+            # Check if ID is available
+            self.conn = sqlite3.connect("database.db")
+            self.c = self.conn.cursor()
+            result = self.c.execute("SELECT * from employee WHERE roll=" + str(id))
+            row = result.fetchone()
+            serachresult = "ID : " + str(row[0]) + '\n' + "Name : " + str(row[1]) + '\n' + "Role : " + str(
+                row[2]) + '\n' + "Access Level : " + str(row[3]) + '\n' + "Department : " + str(row[4])
+            QMessageBox.information(QMessageBox(), 'Successful', serachresult)
+            self.conn.commit()
+            self.c.close()
+            self.conn.close()
+
+            # Update employee data
+            self.conn = sqlite3.connect("database.db")
+            self.c = self.conn.cursor()
+            # self.c.execute("INSERT INTO employee (name,branch,sem,Mobile,address) VALUES (?,?,?,?,?)",
+            #                (name, branch, sem, mobile, address))
+            self.c.execute(f"UPDATE employee SET name = '{name}',"
+                           f"branch = '{branch}',"
+                           f"sem = '{sem}',"
+                           f"Mobile = '{mobile}',"
+                           f"address = '{address}'"
+                           f"WHERE roll = {id};")
+            self.conn.commit()
+            self.c.close()
+            self.conn.close()
+            QMessageBox.information(QMessageBox(), 'Successful', 'Employee was updated successfully.')
+            self.close()
+        except Exception:
+            QMessageBox.warning(QMessageBox(), 'Error', 'Could not update employee data. Check ID')
+
+
 class SearchDialog(QDialog):
     def __init__(self, *args, **kwargs):
         super(SearchDialog, self).__init__(*args, **kwargs)
@@ -94,7 +227,7 @@ class SearchDialog(QDialog):
         self.searchinput = QLineEdit()
         self.onlyInt = QIntValidator()
         self.searchinput.setValidator(self.onlyInt)
-        self.searchinput.setPlaceholderText("Roll No.")
+        self.searchinput.setPlaceholderText("Employee ID")
         layout.addWidget(self.searchinput)
         layout.addWidget(self.QBtn)
         self.setLayout(layout)
@@ -279,7 +412,7 @@ if __name__ == '__main__':
     # Request a password to db
     passdlg = LoginDialog()
 
-    if (passdlg.exec_() == QDialog.Accepted):
+    if passdlg.exec_() == QDialog.Accepted:
         window = MainWindow()
         window.show()
         window.loaddata()
