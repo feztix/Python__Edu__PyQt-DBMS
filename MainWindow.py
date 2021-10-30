@@ -122,11 +122,10 @@ class MainWindow(QMainWindow):
 
     def export(self):
         dlg = ExportToCsvDialog()
-        # dlg.exec_()
 
     def _import(self):
-        dlg = DeleteDialog()
-        dlg.exec_()
+        dlg = ImportFromCsvDialog()
+        # dlg.exec_()
 
     def about(self):
         dlg = AboutDialog()

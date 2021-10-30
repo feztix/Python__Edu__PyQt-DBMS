@@ -1,13 +1,13 @@
+# TODO перебрать список зависимостей
 import csv
-
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtPrintSupport import *
 import sys, sqlite3, time
 from MainWindow import *
-
 import os
+import pandas
 
 
 class InsertDialog(QDialog):
@@ -82,28 +82,6 @@ class UpdateDialog(QDialog):
     def __init__(self, *args, **kwargs):
         super(UpdateDialog, self).__init__(*args, **kwargs)
 
-        # SearchDialog().exec()
-
-        # self.QBtn = QPushButton()
-        # self.QBtn.setText("Update")
-        #
-        # self.setWindowTitle("Update employee")
-        # self.setFixedWidth(300)
-        # self.setFixedHeight(100)
-        # self.QBtn.clicked.connect(self.searchstudent)
-        # # self.QBtn.clicked.connect(self.addemployee)
-        # layout = QVBoxLayout()
-        #
-        # self.searchinput = QLineEdit()
-        # self.onlyInt = QIntValidator()
-        # self.searchinput.setValidator(self.onlyInt)
-        # self.searchinput.setPlaceholderText("Employee ID")
-        # layout.addWidget(self.searchinput)
-        # layout.addWidget(self.QBtn)
-        # self.setLayout(layout)
-
-        #
-
         self.QBtn = QPushButton()
         self.QBtn.setText("Update")
 
@@ -150,24 +128,6 @@ class UpdateDialog(QDialog):
 
         layout.addWidget(self.QBtn)
         self.setLayout(layout)
-
-    # def searchstudent(self):
-    #
-    #     searchrol = self.searchinput.text()
-
-    # try:
-    #     self.conn = sqlite3.connect("database.db")
-    #     self.c = self.conn.cursor()
-    #     result = self.c.execute("SELECT * from employee WHERE roll=" + str(searchrol))
-    #     row = result.fetchone()
-    #     serachresult = "ID : " + str(row[0]) + '\n' + "Name : " + str(row[1]) + '\n' + "Role : " + str(
-    #         row[2]) + '\n' + "Access Level : " + str(row[3]) + '\n' + "Department : " + str(row[4])
-    #     QMessageBox.information(QMessageBox(), 'Successful', serachresult)
-    #     self.conn.commit()
-    #     self.c.close()
-    #     self.conn.close()
-    # except Exception:
-    #     QMessageBox.warning(QMessageBox(), 'Error', 'Could not Find employee from the database.')
 
     def updateEmployee(self):
 
@@ -341,9 +301,7 @@ class ExportToCsvDialog(QDialog):
             self.exportToDict(fileName)
 
     def exportToDict(self, filename):
-        # exportFile = self.fileNameInput.text()
 
-        # Возможно нужно будет передать в CSV
         exportFile = filename
         self.conn = sqlite3.connect("database.db")
 
@@ -368,6 +326,37 @@ class ExportToCsvDialog(QDialog):
             dict_writer = csv.DictWriter(output_file, keys)
             dict_writer.writeheader()
             dict_writer.writerows(toCSV)
+
+
+class ImportFromCsvDialog(QDialog):
+    def __init__(self, *args, **kwargs):
+        super(ImportFromCsvDialog, self).__init__(*args, **kwargs)
+
+        self.setWindowTitle("Import From Csv File")
+        self.setFixedWidth(300)
+        self.setFixedHeight(100)
+
+        self.open()
+
+    def open(self):
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        fileName, _ = QFileDialog.getOpenFileName(self, 'Open a file', '',
+                                           'Text Files (*.csv)', options=options)
+        if fileName:
+            self.import_to_db(fileName)
+
+    def import_to_db(self, filename):
+        self.conn = sqlite3.connect("database.db")
+        self.c = self.conn.cursor()
+        self.c.execute("DROP TABLE IF EXISTS employee")
+        self.c.execute("""
+                    CREATE TABLE IF NOT EXISTS employee(roll INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT,branch TEXT,
+                    sem TEXT,mobile INTEGER,address TEXT)""")
+
+        table_name = "employee"
+        orders = pandas.read_csv(filename)  # load to DataFrame
+        orders.to_sql(table_name, self.conn, if_exists='append', index=False)
 
 
 class AboutDialog(QDialog):
@@ -416,5 +405,4 @@ if __name__ == '__main__':
         window = MainWindow()
         window.show()
         window.loaddata()
-
     sys.exit(app.exec_())
