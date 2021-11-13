@@ -1,7 +1,7 @@
 import sqlite3
 
 from main import *
-
+from TreeBin import *
 
 class MainWindow(QMainWindow):
     def __init__(self, *args, **kwargs):
@@ -89,6 +89,10 @@ class MainWindow(QMainWindow):
         import_csv_action.triggered.connect(self._import)
         file_menu.addAction(import_csv_action)
 
+        visualize_bin_tree_from_json_action = QAction(QIcon(""), "Visualize Binary Tree", self)
+        visualize_bin_tree_from_json_action.triggered.connect(self.visualize)
+        file_menu.addAction(visualize_bin_tree_from_json_action)
+
         about_action = QAction(QIcon("icon/info.png"), "About", self)
         about_action.triggered.connect(self.about)
         help_menu.addAction(about_action)
@@ -126,6 +130,9 @@ class MainWindow(QMainWindow):
     def _import(self):
         dlg = ImportFromCsvDialog()
         # dlg.exec_()
+
+    def visualize(self):
+        dlg = VisualizeBinTreeFromJson()
 
     def about(self):
         dlg = AboutDialog()
