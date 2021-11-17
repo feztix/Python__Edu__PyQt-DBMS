@@ -1,7 +1,7 @@
 import sqlite3
 
 from main import *
-from TreeBin import *
+from BinaryTree import *
 
 class MainWindow(QMainWindow):
     def __init__(self, *args, **kwargs):
