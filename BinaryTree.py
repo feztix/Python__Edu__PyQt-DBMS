@@ -13,6 +13,75 @@ from BinaryTreeWindow import Ui_MainWindow, myWindow
 import random
 import copy
 import numpy
+import collections
+import json
+
+class TreeNode(object):
+    def __init__(self, x):
+        self.val = x
+        self.left = None
+        self.right = None
+        self.root = 1
+
+    def preOrder(root):
+        if root:
+            size = 50
+            if root == 1:
+                x = 1 * 0.8 * pow(2, 1) * size
+                y = 0
+            scene.addEllipse(x, y, size, size)
+            text = scene.addText(str(node.key))
+            text.setPos(x + (10 * scale), y + (10 * scale))
+            print(root.val)
+            if root.left:
+                print("Draw Left Here")
+                TreeNode.preOrder(root.left)
+            if root.right:
+                print("Draw Right Here")
+                TreeNode.preOrder(root.right)
+
+
+class Codec:
+
+    def serialize(self, root):
+        if not root:
+            return 'null'
+        nodes = collections.deque([root])
+        maps = collections.deque([{'v': root.val}])
+        tree = maps[0]
+        while nodes:
+            frontNode = nodes.popleft()
+            frontMap = maps.popleft()
+            if frontNode.left:
+                frontMap['l'] = {'v': frontNode.left.val}
+                nodes.append(frontNode.left)
+                maps.append(frontMap['l'])
+            if frontNode.right:
+                frontMap['r'] = {'v': frontNode.right.val}
+                nodes.append(frontNode.right)
+                maps.append(frontMap['r'])
+        return json.dumps(tree)
+
+    def deserialize(self, data):
+        tree = json.loads(data)
+        if not tree:
+            return None
+        root = TreeNode(tree['v'])
+        maps = collections.deque([tree])
+        nodes = collections.deque([root])
+        while nodes:
+            frontNode = nodes.popleft()
+            frontMap = maps.popleft()
+            left, right = frontMap.get('l'), frontMap.get('r')
+            if left:
+                frontNode.left = TreeNode(left['v'])
+                maps.append(left)
+                nodes.append(frontNode.left)
+            if right:
+                frontNode.right = TreeNode(right['v'])
+                maps.append(right)
+                nodes.append(frontNode.right)
+        return root
 
 
 class VisualizeBinTreeFromJson(QDialog):
@@ -20,7 +89,7 @@ class VisualizeBinTreeFromJson(QDialog):
         super(VisualizeBinTreeFromJson, self).__init__(*args, **kwargs)
 
         self.setWindowTitle("Visualize Binary Tree From Json File")
-        self.setFixedWidth(300)
+        self.setFi2xedWidth(300)
         self.setFixedHeight(100)
 
         self.open()
@@ -103,94 +172,103 @@ class BinaryTree1:
         self.count += 1
 
     def GenerateTree(self):
-        for i in range(10):
-            self.AddNode(random.randint(0, 1245))
+        # for i in range(10):
+        #     self.AddNode(random.randint(0, 1245))
+        codec = Codec()
 
-    def SearchNode(self, keyP: int, nodeP):
-        if nodeP is None:
-            return None
-        if nodeP.key == keyP:
-            return nodeP
-        elif keyP < nodeP.key:
-            if nodeP.leftCh is None:
-                return None
-            else:
-                return self.SearchNode(keyP, nodeP.leftCh)
-        else:
-            if nodeP.rightCh is None:
-                return None
-            else:
-                return self.SearchNode(keyP, nodeP.rightCh)
+        data = '{"v": 1, "r": {"v": 2, "l": {"v": 3}}, "l": {"v":5}}'
+        des = codec.deserialize(data)
+        # здесь я получаю дерево
+        print(des.right.left.val)
 
-    def DeleteNode(self, keyP):
-        self.count-=1
-        searchedElem = self.SearchNode(keyP, self.root)
-        if searchedElem is None:
-            return
-        else:
-            if searchedElem.leftCh is None and searchedElem.rightCh is None:
-                if searchedElem == self.root:
-                    self.root = None
-                else:
-                    if searchedElem.parent.leftCh == searchedElem:
-                        searchedElem.parent.leftCh = None
-                    else:
-                        searchedElem.parent.rightCh = None
-            else:
-                if searchedElem.leftCh is None:
-                    searchedElem.rightCh.parent = searchedElem.parent
-                    if searchedElem == self.root:
-                        self.root = searchedElem.rightCh
-                    else:
-                        if searchedElem.parent.leftCh == searchedElem:
-                            searchedElem.parent.leftCh = searchedElem.rightCh
-                        else:
-                            searchedElem.parent.rightCh = searchedElem.rightCh
-                else:
-                    if searchedElem.rightCh is None:
-                        searchedElem.leftCh.parent = searchedElem.parent
-                        if searchedElem == self.root:
-                            self.root = searchedElem.leftCh
-                        else:
-                            if searchedElem.parent.leftCh == searchedElem:
-                                searchedElem.parent.leftCh = searchedElem.leftCh
-                            else:
-                                searchedElem.parent.rightCh = searchedElem.leftCh
-                    else:
-                        self.count+=1
-                        nodeT = searchedElem.rightCh
-                        while nodeT.leftCh is not None:
-                            nodeT = nodeT.leftCh
-                        keyT = nodeT.key
-                        self.DeleteNode(nodeT.key)
-                        searchedElem.key = keyT
-        self.CountLvl()
+        ser = codec.serialize(des)
+        print(ser)
 
-    def CountLvl(self, nodeP=None, lCount=0):
-        if nodeP is None:
-            if self.root is None:
-                return
-            else:
-                self.maxLCount = 0
-                nodeP = self.root
-        if nodeP.leftCh is not None:
-            lCount +=1
-            if lCount>self.maxLCount:
-                self.maxLCount = lCount
-            self.CountLvl(nodeP.leftCh, lCount)
-            lCount -= 1
-        if nodeP.rightCh is not None:
-            lCount += 1
-            if lCount>self.maxLCount:
-                self.maxLCount = lCount
-            self.CountLvl(nodeP.rightCh, lCount)
-            lCount -= 1
-        self.lvlCount = self.maxLCount
+    # def SearchNode(self, keyP: int, nodeP):
+    #     if nodeP is None:
+    #         return None
+    #     if nodeP.key == keyP:
+    #         return nodeP
+    #     elif keyP < nodeP.key:
+    #         if nodeP.leftCh is None:
+    #             return None
+    #         else:
+    #             return self.SearchNode(keyP, nodeP.leftCh)
+    #     else:
+    #         if nodeP.rightCh is None:
+    #             return None
+    #         else:
+    #             return self.SearchNode(keyP, nodeP.rightCh)
 
-    def Clear(self):
-        if self.root is not None:
-            self.DeleteNode(self.root.key)
-            self.Clear()
+    # def DeleteNode(self, keyP):
+    #     self.count-=1
+    #     searchedElem = self.SearchNode(keyP, self.root)
+    #     if searchedElem is None:
+    #         return
+    #     else:
+    #         if searchedElem.leftCh is None and searchedElem.rightCh is None:
+    #             if searchedElem == self.root:
+    #                 self.root = None
+    #             else:
+    #                 if searchedElem.parent.leftCh == searchedElem:
+    #                     searchedElem.parent.leftCh = None
+    #                 else:
+    #                     searchedElem.parent.rightCh = None
+    #         else:
+    #             if searchedElem.leftCh is None:
+    #                 searchedElem.rightCh.parent = searchedElem.parent
+    #                 if searchedElem == self.root:
+    #                     self.root = searchedElem.rightCh
+    #                 else:
+    #                     if searchedElem.parent.leftCh == searchedElem:
+    #                         searchedElem.parent.leftCh = searchedElem.rightCh
+    #                     else:
+    #                         searchedElem.parent.rightCh = searchedElem.rightCh
+    #             else:
+    #                 if searchedElem.rightCh is None:
+    #                     searchedElem.leftCh.parent = searchedElem.parent
+    #                     if searchedElem == self.root:
+    #                         self.root = searchedElem.leftCh
+    #                     else:
+    #                         if searchedElem.parent.leftCh == searchedElem:
+    #                             searchedElem.parent.leftCh = searchedElem.leftCh
+    #                         else:
+    #                             searchedElem.parent.rightCh = searchedElem.leftCh
+    #                 else:
+    #                     self.count+=1
+    #                     nodeT = searchedElem.rightCh
+    #                     while nodeT.leftCh is not None:
+    #                         nodeT = nodeT.leftCh
+    #                     keyT = nodeT.key
+    #                     self.DeleteNode(nodeT.key)
+    #                     searchedElem.key = keyT
+    #     self.CountLvl()
+
+    # def CountLvl(self, nodeP=None, lCount=0):
+    #     if nodeP is None:
+    #         if self.root is None:
+    #             return
+    #         else:
+    #             self.maxLCount = 0
+    #             nodeP = self.root
+    #     if nodeP.leftCh is not None:
+    #         lCount +=1
+    #         if lCount>self.maxLCount:
+    #             self.maxLCount = lCount
+    #         self.CountLvl(nodeP.leftCh, lCount)
+    #         lCount -= 1
+    #     if nodeP.rightCh is not None:
+    #         lCount += 1
+    #         if lCount>self.maxLCount:
+    #             self.maxLCount = lCount
+    #         self.CountLvl(nodeP.rightCh, lCount)
+    #         lCount -= 1
+    #     self.lvlCount = self.maxLCount
+    #
+    # def Clear(self):
+    #     if self.root is not None:
+    #         self.DeleteNode(self.root.key)
+    #         self.Clear()
 
 
     def paint(self, scene, scale, node, x=0, y=0, currLvl=0, currNum=1):
