@@ -23,22 +23,22 @@ class TreeNode(object):
         self.right = None
         self.root = 1
 
-    def preOrder(root):
-        if root:
-            size = 50
-            if root == 1:
-                x = 1 * 0.8 * pow(2, 1) * size
-                y = 0
-            scene.addEllipse(x, y, size, size)
-            text = scene.addText(str(node.key))
-            text.setPos(x + (10 * scale), y + (10 * scale))
-            print(root.val)
-            if root.left:
-                print("Draw Left Here")
-                TreeNode.preOrder(root.left)
-            if root.right:
-                print("Draw Right Here")
-                TreeNode.preOrder(root.right)
+    # def preOrder(root):
+    #     if root:
+    #         size = 50
+    #         if root == 1:
+    #             x = 1 * 0.8 * pow(2, 1) * size
+    #             y = 0
+    #         scene.addEllipse(x, y, size, size)
+    #         text = scene.addText(str(node.key))
+    #         text.setPos(x + (10 * scale), y + (10 * scale))
+    #         print(root.val)
+    #         if root.left:
+    #             print("Draw Left Here")
+    #             TreeNode.preOrder(root.left)
+    #         if root.right:
+    #             print("Draw Right Here")
+    #             TreeNode.preOrder(root.right)
 
 
 class Codec:
@@ -89,7 +89,7 @@ class VisualizeBinTreeFromJson(QDialog):
         super(VisualizeBinTreeFromJson, self).__init__(*args, **kwargs)
 
         self.setWindowTitle("Visualize Binary Tree From Json File")
-        self.setFi2xedWidth(300)
+        self.setFixedWidth(300)
         self.setFixedHeight(100)
 
         self.open()
@@ -125,12 +125,11 @@ class VisualizeBinTreeFromJson(QDialog):
 
 
 class Node:
-    def __init__(self, key: int, parent=None):
-        self.key = key
-        self.parent = parent
-        self.leftCh = None
-        self.rightCh = None
-
+    def __init__(self, x):
+        self.val = x
+        self.left = None
+        self.right = None
+        self.root = 1
 
 class BinaryTree1:
 
@@ -146,34 +145,35 @@ class BinaryTree1:
             self.lvlCount = 0
             self.maxLCount = 0
 
-    def AddNode(self, keyP: int, nodeP=None, currLvl=0):
-        if nodeP is None:
-            nodeP = self.root
-        if self.count == 0:
-            self.root = Node(keyP)
-        elif keyP < nodeP.key:
-            currLvl += 1
-            if currLvl > self.lvlCount:
-                self.lvlCount = currLvl
-            if nodeP.leftCh is None:
-                nodeP.leftCh = Node(keyP, nodeP)
-            else:
-                self.count -= 1
-                self.AddNode(keyP, nodeP.leftCh, currLvl)
-        else:
-            currLvl += 1
-            if currLvl > self.lvlCount:
-                self.lvlCount = currLvl
-            if nodeP.rightCh is None:
-                nodeP.rightCh = Node(keyP, nodeP)
-            else:
-                self.count -= 1
-                self.AddNode(keyP, nodeP.rightCh, currLvl)
-        self.count += 1
+    # def AddNode(self, keyP: int, nodeP=None, currLvl=0):
+    #     if nodeP is None:
+    #         nodeP = self.root
+    #     if self.count == 0:
+    #         self.root = Node(keyP)
+    #     elif keyP < nodeP.key:
+    #         currLvl += 1
+    #         if currLvl > self.lvlCount:
+    #             self.lvlCount = currLvl
+    #         if nodeP.leftCh is None:
+    #             nodeP.leftCh = Node(keyP, nodeP)
+    #         else:
+    #             self.count -= 1
+    #             self.AddNode(keyP, nodeP.leftCh, currLvl)
+    #     else:
+    #         currLvl += 1
+    #         if currLvl > self.lvlCount:
+    #             self.lvlCount = currLvl
+    #         if nodeP.rightCh is None:
+    #             nodeP.rightCh = Node(keyP, nodeP)
+    #         else:
+    #             self.count -= 1
+    #             self.AddNode(keyP, nodeP.rightCh, currLvl)
+    #     self.count += 1
 
     def GenerateTree(self):
         # for i in range(10):
         #     self.AddNode(random.randint(0, 1245))
+
         codec = Codec()
 
         data = '{"v": 1, "r": {"v": 2, "l": {"v": 3}}, "l": {"v":5}}'
@@ -183,6 +183,7 @@ class BinaryTree1:
 
         ser = codec.serialize(des)
         print(ser)
+        return des
 
     # def SearchNode(self, keyP: int, nodeP):
     #     if nodeP is None:
@@ -271,27 +272,29 @@ class BinaryTree1:
     #         self.Clear()
 
 
-    def paint(self, scene, scale, node, x=0, y=0, currLvl=0, currNum=1):
-        if node is None:
+    def paint(self, scene, scale, des , x=0, y=0, currLvl=0, currNum=1):
+        ###########################################3
+
+        if des is None:
             return
         size = 50
-        if node == self.root:
+        if des.val == des.root:
             x = currNum*scale*pow(2, self.lvlCount) * size
             y = 0
         scene.addEllipse(x, y, size, size)
-        text = scene.addText(str(node.key))
+        text = scene.addText(str(des.val))
         text.setPos(x+(10*scale), y+(10*scale))
         nextNumL = currNum * 2 - 1
         nextNumR = currNum * 2
-        nextXL = x-pow(2, self.lvlCount-currLvl)*size*0.25
-        nextXR = x+pow(2, self.lvlCount-currLvl)*size*0.25
+        nextXL = x-pow(2, self.lvlCount-currLvl)*size*0.50
+        nextXR = x+pow(2, self.lvlCount-currLvl)*size*0.50
         nextY = y + 150
-        if node.leftCh is not None:
+        if des.left is not None:
             scene.addLine(x + size*0.5, y + size, nextXL + size*0.5, nextY)
-            self.paint(scene, scale, node.leftCh, nextXL, nextY, currLvl + 1, currNum * 2 - 1)
-        if node.rightCh is not None:
+            self.paint(scene, scale, des.left, nextXL, nextY, currLvl + 1, currNum * 2 - 1)
+        if des.right is not None:
             scene.addLine(x + size*0.5, y + size, nextXR + size*0.5, nextY)
-            self.paint(scene, scale, node.rightCh, nextXR, nextY, currLvl + 1, currNum * 2)
+            self.paint(scene, scale, des.right, nextXR, nextY, currLvl + 1, currNum * 2)
 
     def print(self, lvl, node=None,  currLvl=0):
         if node is None:

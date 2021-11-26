@@ -48,7 +48,16 @@ class myWindow(QMainWindow):
     def PaintT(self):
         self.ui.label_5.setText(str(self.tree.count))
         self.ui.label_7.setText(str(self.tree.lvlCount))
-        self.tree.paint(self.scene, self.scale, self.tree.root)
+        # Передеать в paint des данные
+        ## ЧТОБЫ ВТОРОЙ РАЗ НЕ ПЕРЕСОЗДАВАЛО ОБЪЕКТ
+        codec = BinaryTree.Codec()
+
+        data = '{"v": 1, "r": {"v": 2, "l": {"v": 3}}, "l": {"v":5}}'
+        des = codec.deserialize(data)
+        # здесь я получаю дерево
+        print(des.right.left.val)
+        ############################################
+        self.tree.paint(self.scene, self.scale, des)
 
 
 # UI дизайн
